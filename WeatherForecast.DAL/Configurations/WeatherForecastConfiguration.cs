@@ -29,8 +29,6 @@ namespace WeatherForecast.DAL.Configurations
             builder.Property(e => e.Condition)
                 .IsRequired(true);
 
-            
-
             builder.Property(e => e.TemperatureInCel)
                 .IsRequired(true);
 

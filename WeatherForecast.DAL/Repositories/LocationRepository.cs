@@ -82,7 +82,6 @@ namespace WeatherForecast.DAL.Repositories
                 location = locationEntity;
             }
 
-
             var countryModel = new CountryModel
             {
                 Id = location.Country.Id,
@@ -124,7 +123,6 @@ namespace WeatherForecast.DAL.Repositories
             };
 
             return locationModel;
-
         }
     }
 }

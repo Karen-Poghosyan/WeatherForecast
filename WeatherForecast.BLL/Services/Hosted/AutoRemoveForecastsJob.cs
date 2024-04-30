@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using WeatherForecast.Core.Abstractions.BLL;
+using WeatherForecast.Core.Constants;
 using Timer = System.Threading.Timer;
 
 namespace WeatherForecast.BLL.Services.Hosted
@@ -27,10 +28,10 @@ namespace WeatherForecast.BLL.Services.Hosted
                 {
                     while (!cancellationToken.IsCancellationRequested)
                     {
-                        var nextRunTime = DateTime.Today.AddHours(18);
+                        var nextRunTime = DateTime.Today.AddHours(TimeParameters.AutoUpdateHour);
                         if (DateTime.Now >= nextRunTime)
                         {
-                            nextRunTime = nextRunTime.AddDays(1);
+                            nextRunTime = nextRunTime.AddDays(TimeParameters.AutoUpdateIntereval);
                         }
 
                         var timeToNextRun = nextRunTime - DateTime.Now;
@@ -41,11 +42,10 @@ namespace WeatherForecast.BLL.Services.Hosted
                         {
                             var weatherForecastService = scope.ServiceProvider.GetService<IWeatherForecastService>();
 
-                            var oneMonthAgo = DateTime.Today.AddMonths(-1);
+                            var oneMonthAgo = DateTime.Today.AddMonths(TimeParameters.AutoRemoveMonths);
                             await weatherForecastService.RemoveForecastsByDateAsync(oneMonthAgo);
                         }
                     }
-                
                 });
             }
             catch (Exception ex)

@@ -33,7 +33,6 @@ namespace WeatherForecast.Controllers
             if (forecast == null)
             {
                 return NotFound();
-            
             }
             return Ok(forecast);
         }
@@ -46,7 +45,6 @@ namespace WeatherForecast.Controllers
             if (forecasts == null || !forecasts.Any())
             {
                 return NotFound();
-            
             }
             return Ok(forecasts);
         }

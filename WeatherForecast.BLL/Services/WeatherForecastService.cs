@@ -36,7 +36,8 @@ namespace WeatherForecast.BLL.Services
                     var weatherForecastCheckModel = weatherForecastByDay.WeatherByHours.FirstOrDefault();
 
                     var actualDate = weatherForecastCheckModel.DateTime.Date;
-                    var actualLocation = weatherForecastCheckModel.Location;
+
+                    var actualLocation = await _locationRepository.GetLocationByModelAsync(weatherForecastCheckModel.Location);
 
                     var distinctLocations = weatherForecastByDay.WeatherByHours.Select(t => t.Location).Distinct().ToList();
                     var distinctDates = weatherForecastByDay.WeatherByHours.Select(t => t.DateTime.Date).Distinct().ToList();
@@ -54,10 +55,7 @@ namespace WeatherForecast.BLL.Services
                     }
 
 
-                    var existingWeather = _weatherRepository.Find(w => w.DateTime.Date == actualDate &&
-                                                        w.Location.CountryId == actualLocation.Country.Id &&
-                                                        (w.Location.StateId == actualLocation.State.Id || (w.Location.StateId == null && actualLocation.State == null)) &&
-                                                        (w.Location.CityId == actualLocation.City.Id || (w.Location.CityId == null && actualLocation.City == null))).FirstOrDefault();
+                    var existingWeather = _weatherRepository.Find(w => w.DateTime.Date == actualDate && w.Location == actualLocation).FirstOrDefault();
 
                     if (existingWeather != null)
                     {
@@ -71,11 +69,11 @@ namespace WeatherForecast.BLL.Services
 
                     if (!isLocationExists)
                     {
-                        location = await _locationRepository.CreateLocationByModelAsync(actualLocation);
+                        location = await _locationRepository.CreateLocationByModelAsync(weatherForecastCheckModel.Location);
                     }
                     else
                     {
-                        location = await _locationRepository.GetLocationByModelAsync(actualLocation);
+                        location = await _locationRepository.GetLocationByModelAsync(weatherForecastCheckModel.Location);
                     }
 
                     foreach (var weatherByHour in weatherForecastByDay.WeatherByHours)
@@ -135,13 +133,13 @@ namespace WeatherForecast.BLL.Services
 
                 var averageWeatherCondition = WeatherHelper.CalculateAverageCondition(weatherConditions);
 
-                var averageWindSpeed = orederedWeatherForecasts.Select(w => w.WindSpeed).Average();
+                var averageWindSpeed = orederedWeatherForecasts.Average(w => w.WindSpeed);
 
-                var averageTemperatureC = orederedWeatherForecasts.Select( w => w.TemperatureInCel).Average();
+                var averageTemperatureC = orederedWeatherForecasts.Average( w => w.TemperatureInCel);
 
-                var maxTemperatureC = orederedWeatherForecasts.Select(w => w.TemperatureInCel).Max();
+                var maxTemperatureC = orederedWeatherForecasts.Max(w => w.TemperatureInCel);
                 
-                var minTemperatureC = orederedWeatherForecasts.Select(w => w.TemperatureInCel).Min();
+                var minTemperatureC = orederedWeatherForecasts.Min(w => w.TemperatureInCel);
 
                 var forecastByHours = new List<WeatherByTimeInfoModel>();
 
@@ -182,10 +180,7 @@ namespace WeatherForecast.BLL.Services
 
             var location = await _locationRepository.GetLocationByModelAsync(locationModel);
 
-            var futureForecasts = await _weatherRepository.Find(w => w.DateTime.Date >= today && w.DateTime.Date <= today.AddDays(6) &&
-                                                            w.Location.City == location.City &&
-                                                            w.Location.State == location.State &&
-                                                            w.Location.Country == location.Country)
+            var futureForecasts = await _weatherRepository.Find(w => w.DateTime.Date >= today && w.DateTime.Date <= today.AddDays(6) && w.Location == location)
                                                         .GroupBy(w => w.DateTime.Date)
                                                         .Select(g => new WeatherByDayInfoModel
                                                         {
@@ -240,7 +235,8 @@ namespace WeatherForecast.BLL.Services
                     var weatherForecastCheckModel = weatherByDay.WeatherByHours.FirstOrDefault();
 
                     var actualDate = weatherForecastCheckModel.DateTime.Date;
-                    var actualLocation = weatherForecastCheckModel.Location;
+
+                    var actualLocation = await _locationRepository.GetLocationByModelAsync(weatherForecastCheckModel.Location);
 
                     var distinctLocations = weatherByDay.WeatherByHours.Select(t => t.Location).Distinct().ToList();
                     var distinctDates = weatherByDay.WeatherByHours.Select(t => t.DateTime.Date).Distinct().ToList();
@@ -251,10 +247,7 @@ namespace WeatherForecast.BLL.Services
                     }
 
 
-                    var existingWeather = await _weatherRepository.Find(w => w.DateTime.Date == actualDate &&
-                                                            w.Location.CountryId == actualLocation.Country.Id &&
-                                                            (w.Location.StateId == actualLocation.State.Id || (w.Location.StateId == null && actualLocation.State == null)) &&
-                                                            (w.Location.CityId == actualLocation.City.Id || (w.Location.CityId == null && actualLocation.City == null))).ToListAsync();
+                    var existingWeather = await _weatherRepository.Find(w => w.DateTime.Date == actualDate && w.Location == actualLocation).ToListAsync();
 
                     if (existingWeather == null || !existingWeather.Any())
                     {
